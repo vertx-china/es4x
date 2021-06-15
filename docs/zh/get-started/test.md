@@ -4,10 +4,10 @@
 [vert.x unit](https://github.com/vert-x3/vertx-unit)。安装非常简单:
 
 ```bash
-yarn add -D @vertx/unit # OR npm install @vertx/unit --save-dev
+npm install @vertx/unit --save-dev # OR yarn add -D @vertx/unit
 
 # ensure es4x fetches the non npm dependencies
-yarn # OR npm install
+npm install # OR yarn
 ```
 
 ## 编写测试用例
@@ -40,7 +40,7 @@ suite.run();
 这行命令将会在JVM上运行你的应用, 来替换默认的`npm`操作
 
 ```bash
-Running: java ... 
+Running: java ...
 Begin test suite the_test_suite
 Begin test my_test_case
 Passed my_test_case
@@ -56,7 +56,7 @@ End test suite the_test_suite , run: 1, Failures: 0, Errors: 0
 {
    ...
   "scripts" : {
-    "test" : "es4x-launcher test index.test.js",
+    "test" : "es4x test index.test.js",
     ...
 }
 ```

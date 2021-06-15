@@ -4,19 +4,17 @@ ES4X 应用会在安装`npm`阶段创建`es4x-launcher`。 如果`es4x-launcher`
 执行命令:
 
 ```bash
-yarn # OR npm install
+npm install # OR yarn
 ```
 
 ::: tip
-
 `es4x-launcher`的位置在`node_modules/.bin/es4x-lancher.*`。
-
 :::
 
 安装好后, 启动应用非常简单 ::
 
 ```bash
-yarn start # OR npm start
+npm start # OR yarn start
 ```
 
 这行命令将会在JVM上运行你的应用, 来替换默认的`npm`操作。使用样例的*Hello World*
@@ -78,4 +76,4 @@ N=2 \
 ./node_modules/.bin/es4x-launcher -cluster
 ```
 
-要了解关于集群的更多内容, 请参考vert.x的官方文档。
+要了解关于集群的更多内容, 请参考 [vert.x](https://www.vertx.io) 的官方文档。

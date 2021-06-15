@@ -8,7 +8,8 @@ npm pack
 
 [npm pack](https://docs.npmjs.com/cli/pack) 会在应用当中生成一个`TGZ`文件，您可以把这个应用移动到其他的目录下。然而应用也可以发布到NPM注册中心。
 
-请注意(这很重要)：为了能与`published/packed`正常的运行，我们需要在目标环境拥有打包[es4x-pm](https://www.npmjs.com/package/es4x-pm)的权限，因为我们有必要安装`java`的部分。
+请注意(这很重要)：为了能与`published/packed`正常的运行，
+我们需要在目标环境拥有打包[@es4x/create](https://www.npmjs.com/package/@es4x/create)的权限，因为我们有必要安装`java`的部分。
 
 
 ## Docker

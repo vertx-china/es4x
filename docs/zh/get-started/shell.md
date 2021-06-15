@@ -25,3 +25,7 @@ java -jar es4x-launcher.jar run "js:>"
 ```
 
 这样shell环境就建好了, 可以利用classpath下的所有可用组件来运行你的代码。
+
+::: warning
+The REPL will not be able to use `MJS` modules references as those are computed at initialization time.
+:::

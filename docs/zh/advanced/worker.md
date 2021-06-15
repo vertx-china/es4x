@@ -1,4 +1,4 @@
-# Worker API
+# Workers
 
 [MDN](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Using_web_workers) Web Workers 的定义为：
 
@@ -51,11 +51,11 @@ verticle这边提供接收错误和 `terminate()` 方法以终止worker，但是
 Worker.create('workers/worker.js', function (create) {
   if (create.succeeded()) {
     var worker = create.result();
-    
+
     worker.onmessage = function (msg) {
       console.log('onmessage: ' + msg);
     };
-    
+
     worker.onerror = function (err) {
       console.err(err);
       // terminate the worker

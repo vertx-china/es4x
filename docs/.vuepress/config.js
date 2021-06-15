@@ -509,6 +509,10 @@ module.exports = {
                   link: '/zh/advanced/'
                 },
                 {
+                  text: '示例',
+                  link: '/zh/examples/'
+                },
+                {
                   text: 'API参考',
                   link: '/api/'
                 },
@@ -536,18 +540,29 @@ module.exports = {
                     ]
                   }
                 ],
+                '/zh/examples/': [
+                  {
+                    title: '示例',
+                    collapsable: false,
+                    children: [
+                      '',
+                    ]
+                  }
+                ],
                 '/zh/advanced/': [
                   {
                     title: '进阶内容',
                     collapsable: false,
                     children: [
                       '',
-                      // 'commonjs',
-                      // 'esm',
-                      // 'vertx',
+                      'commonjs',
+                      'esm',
                       'globals',
+                      'vertx',
                       'worker',
-                      'graphql'
+                      'jars',
+                      'security',
+                      'logging'
                     ]
                   }
                 ],

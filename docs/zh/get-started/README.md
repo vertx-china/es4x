@@ -4,7 +4,10 @@ ES4X是一款支持EcmaScript >=5应用的小型运行时。该运行时借助[v
 
 ## 工作原理
 
-部署ES4X应用跟开发其他 `JavaScript` 应用并无太大区别。项目使用`package.json`文件定义，并从[npm](https://www.npmjs.com/)**及**[maven central](https://search.maven.org/)中获取依赖。
+部署ES4X应用跟开发其他 `JavaScript` 应用并无太大区别。项目使用`package.json`文件定义，并从以下两个源中获取依赖：
+
+* [npm](https://www.npmjs.com/)
+* [maven central](https://search.maven.org/)
 
 ES4X提供基于JVM扩展的多语言运行时[GraalVM](https://www.graalvm.org)。这意味着您在使用`JavaScript`的同时亦可使用其它的JVM语言。
 

@@ -1,19 +1,28 @@
 # GraalVM
 
-ES4X 使用的是Graalvm，但同样的代码可用 Java8，9，10 及 OpenJ9 **解释执行** 或使用 JDK >=11 (支持 JVMCI) 和 GraalVM **编译执行**。
+ES4X 使用的是Graalvm，但同样的代码可用 Java8，9，10 及 OpenJ9 **解释执行**。
+
+使用 JDK >=11 (支持 JVMCI) 和 GraalVM **编译执行**。
+
+::: tip
+In order words, please use Java >= 11 or GraalVM.
+:::
 
 推荐使用GraalJS，因其提供支持 ES版本 >= 6的JS 及提供开箱即用的generators，promises等工具。
 
-与Java交互需**严格**遵循Java中类/方法的名称。例如获取类的属性时，必需使用getter和setter。举个例子：
+## Differences to Nashorn
+
+不同于 `Nachorn`，在 `GraalJS` 中与Java交互需**严格**遵循Java中类/方法的名称。
+例如获取类的属性时，必需使用getter和setter。举个例子：
 
 ```java
 class Hello {
   private String name;
-  
+
   public String getName() {
     return name;
   }
-  
+
   public void setName(String name) {
     this.name = name;
   }
@@ -39,7 +48,16 @@ var name = hello.getName();
 // set the name
 hello.setName('Paulo');
 ```
+
+## Threading
+
+GraalJS is very strict with only a single thread on the JS context at a time. When working with only Asynchronous Vert.x
+APIs this shall not be an issue. However other libraries can cause problems. To avoid this limitation, it is advised to
+use the `Worker` API or the `EventBus`.
+
+::: warning
 GraalJS 不允许多线程访问同一个脚本上下文。如果您需要多线程，请移步[Worker API](./worker).
+:::
 
 ## Native Images
 
