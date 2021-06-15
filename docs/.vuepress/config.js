@@ -514,7 +514,7 @@ module.exports = {
                 },
                 {
                   text: 'API参考',
-                  link: '/api/'
+                  link: '/zh/api/'
                 },
                 {
                   text: '更新日志',
@@ -566,7 +566,7 @@ module.exports = {
                     ]
                   }
                 ],
-                '/api/': [
+                '/zh/api/': [
                   {
                     title: 'API参考',
                     collapsable: false,
