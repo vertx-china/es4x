@@ -7,6 +7,7 @@ $ java -version
 openjdk version "1.8.0_265"
 OpenJDK Runtime Environment (build 1.8.0_265-8u265-b01-0ubuntu2~20.04-b01)
 OpenJDK 64-Bit Server VM (build 25.265-b01, mixed mode)
+```
 
 If you see a similar output, this means your system currently has `java` **8**, which is not the best option as it will
 not benefit from the high performance engine `es4x` uses.
