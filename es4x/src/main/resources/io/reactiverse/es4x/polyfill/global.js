@@ -21,14 +21,19 @@
 
   global.setTimeout = function (callback, timeout) {
     const args = Array.prototype.slice.call(arguments, 2);
+    // coerce to number
+    timeout = +timeout;
+    if (Number.isNaN(timeout)) {
+      timeout = 0;
+    }
 
-    if (Number(timeout) === 0) {
+    if (timeout === 0) {
       // special case
       vertx.runOnContext(function setTimeout(v) {
         callback.apply(global, args);
       });
     } else {
-      return vertx.setTimer(Number(timeout), function setTimeout(t) {
+      return vertx.setTimer(timeout, function setTimeout(t) {
         callback.apply(global, args);
       });
     }
@@ -36,14 +41,19 @@
 
   global.setInterval = function (callback, timeout) {
     const args = Array.prototype.slice.call(arguments, 2);
+    // coerce to number
+    timeout = +timeout;
+    if (Number.isNaN(timeout)) {
+      timeout = 0;
+    }
 
-    if (Number(timeout) === 0) {
+    if (timeout === 0) {
       // special case
       vertx.runOnContext(function setInterval(v) {
         callback.apply(global, args);
       });
     } else {
-      return vertx.setPeriodic(Number(timeout), function setInterval(t) {
+      return vertx.setPeriodic(timeout, function setInterval(t) {
         callback.apply(global, args);
       });
     }
@@ -59,12 +69,22 @@
 
   global.clearTimeout = function (id) {
     if (id !== undefined) {
+      // coerce to number
+      id = +id;
+      if (Number.isNaN(id)) {
+        id = 0;
+      }
       return vertx.cancelTimer(id);
     }
   };
 
   global.clearInterval = function (id) {
     if (id !== undefined) {
+      // coerce to number
+      id = +id;
+      if (Number.isNaN(id)) {
+        id = 0;
+      }
       return vertx.cancelTimer(id);
     }
   };
@@ -106,7 +126,19 @@
   }
 
   global.process = {
-    env: System.getenv(),
+    env: new Proxy({}, {
+      get: function (obj, prop) {
+        return System.getenv(prop);
+      },
+      getOwnPropertyDescriptor: function(obj, prop) {
+        return  {
+          configurable: true,
+          enumerable: true,
+          writable: false,
+          value: System.getenv(prop)
+        };
+      }
+    }),
     pid: pid,
     platform: System.getProperty('os.name').toLowerCase(),
 
@@ -151,7 +183,7 @@
         return  {
           configurable: true,
           enumerable: true,
-          value: System.getenv(prop)
+          value: System.getProperty(prop)
         };
       }
     }),

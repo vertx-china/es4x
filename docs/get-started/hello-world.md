@@ -121,14 +121,14 @@ In order to get code completion on [Visual Studio Code](https://code.visualstudi
 script should be:
 
 ```js
-/// <reference types="es4x" />
+/// <reference types="@vertx/core" />
 ```
 :::
 
 The hello application `index.js` should be like:
 
 ```js{1-2}
-/// <reference types="es4x" />
+/// <reference types="@vertx/core" />
 // @ts-check
 import { Router } from '@vertx/web';
 
@@ -163,8 +163,8 @@ graaljs native module loader.
 With graaljs `.mjs` support both `import` and `export` will work as per design of the ES6 spec.
 
 ::: tip
-To enable `.mjs` support either use the extension `.mjs` in your `JavaScript` files, or start your application with the
-flag `-Desm`.
+To enable `.mjs` support either use the extension `.mjs` in your `JavaScript` files, or add the property `type: 'module'`
+to your `package.json`.
 :::
 
 ::: warning

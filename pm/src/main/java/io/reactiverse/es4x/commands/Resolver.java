@@ -26,7 +26,6 @@ import org.eclipse.aether.graph.Dependency;
 import org.eclipse.aether.graph.DependencyFilter;
 import org.eclipse.aether.graph.DependencyNode;
 import org.eclipse.aether.graph.Exclusion;
-import org.eclipse.aether.impl.DefaultServiceLocator;
 import org.eclipse.aether.repository.*;
 import org.eclipse.aether.resolution.*;
 import org.eclipse.aether.spi.connector.RepositoryConnectorFactory;
@@ -44,6 +43,7 @@ import java.net.URLDecoder;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -61,9 +61,12 @@ public final class Resolver {
   private final List<RemoteRepository> remotes = new ArrayList<>();
 
   public Resolver() throws MalformedURLException {
-    DefaultServiceLocator locator = getDefaultServiceLocator();
+    system = MavenRepositorySystemUtils.newServiceLocator()
+      .addService(RepositoryConnectorFactory.class, BasicRepositoryConnectorFactory.class)
+      .addService(TransporterFactory.class, FileTransporterFactory.class)
+      .addService(TransporterFactory.class, HttpTransporterFactory.class)
+      .getService(RepositorySystem.class);
 
-    system = locator.getService(RepositorySystem.class);
     localRepo = new LocalRepository(DEFAULT_MAVEN_LOCAL);
 
     if (isOffline()) {
@@ -72,15 +75,14 @@ public final class Resolver {
       return;
     }
 
-    // add user repo
-    String registry = System.getProperty("maven.registry", System.getenv("MAVEN_REGISTRY"));
-    if (registry != null && !"".equals(registry)) {
+    // add user repo(s)
+    for (String registry : getRepositories()) {
       URL url = new URL(registry);
       Authentication auth = extractAuth(url);
       if (auth != null) {
         url = new URL(url.getProtocol(), url.getHost(), url.getPort(), url.getFile());
       }
-      RemoteRepository.Builder builder = new RemoteRepository.Builder("registry", "default", url.toString());
+      RemoteRepository.Builder builder = new RemoteRepository.Builder(url.getHost(), "default", url.toString());
       if (auth != null) {
         builder.setAuthentication(auth);
       }
@@ -93,20 +95,28 @@ public final class Resolver {
         .setSnapshotPolicy(new RepositoryPolicy(false, RepositoryPolicy.UPDATE_POLICY_NEVER, RepositoryPolicy.CHECKSUM_POLICY_FAIL)).build());
   }
 
-  private static DefaultServiceLocator getDefaultServiceLocator() {
-    DefaultServiceLocator locator = MavenRepositorySystemUtils.newServiceLocator();
-    locator.addService(RepositoryConnectorFactory.class, BasicRepositoryConnectorFactory.class);
-    locator.addService(TransporterFactory.class, FileTransporterFactory.class);
-    locator.addService(TransporterFactory.class, HttpTransporterFactory.class);
-    return locator;
-  }
-
   private static boolean isOffline() {
     try {
       return Boolean.parseBoolean(System.getenv("npm_config_offline"));
     } catch (IllegalArgumentException | NullPointerException e) {
       return false;
     }
+  }
+
+  private List<String> getRepositories() {
+    String registry = System.getProperty("maven.registry", System.getenv("MAVEN_REGISTRY"));
+    if (registry != null && !"".equals(registry)) {
+      String[] repositories = registry.split(",");
+      List<String> repos = new ArrayList<>();
+      for (String repo : repositories) {
+        if (repo != null && !"".equals(repo)) {
+          repos.add(repo.trim());
+        }
+      }
+      return repos;
+    }
+
+    return Collections.emptyList();
   }
 
   /**
@@ -148,7 +158,7 @@ public final class Resolver {
           }
 
           for (Exclusion e : ex) {
-            // Check the the passed artifact is excluded
+            // Check if the passed artifact is excluded
             if (e.getArtifactId().equals(dependencyNode.getArtifact().getArtifactId())
               && e.getGroupId().equals(dependencyNode.getArtifact().getGroupId())) {
               return false;
@@ -168,11 +178,11 @@ public final class Resolver {
         // Remove provided dependencies and transitive dependencies of provided dependencies
         (dependencyNode, list) -> {
           for (DependencyNode parent : list) {
-            if (!parent.getDependency().getScope().toLowerCase().equals("compile")) {
+            if (!parent.getDependency().getScope().equalsIgnoreCase("compile")) {
               return false;
             }
           }
-          return dependencyNode.getDependency().getScope().toLowerCase().equals("compile");
+          return dependencyNode.getDependency().getScope().equalsIgnoreCase("compile");
         }
       );
 
@@ -193,8 +203,7 @@ public final class Resolver {
         system.resolveDependencies(session, dependencyRequest).getArtifactResults();
 
     } catch (DependencyResolutionException e) {
-      throw new IllegalArgumentException("Cannot resolve artifacts " + artifacts.toString() +
-        " in maven repositories: " + e.getMessage());
+      throw new IllegalArgumentException("Cannot resolve artifacts " + artifacts + " in maven repositories: " + e.getMessage());
     }
 
     return artifactResults.stream().map(ArtifactResult::getArtifact)
@@ -216,8 +225,7 @@ public final class Resolver {
         }
       } catch (final UnsupportedEncodingException e) {
         throw new IllegalArgumentException(
-          "maven registry url is not encoded with " + defaultCharset +
-          " charset and percent-encoded username/password: " + url,
+          "maven registry url is not encoded with " + defaultCharset + " charset and percent-encoded username/password: " + url,
           e);
       }
       return authBuilder.build();

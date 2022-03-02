@@ -72,22 +72,19 @@ public final class JSVerticleFactory extends ESVerticleFactory {
 
         try {
           if (worker) {
+            runtime.put("self", runtime.eval(Source.create("js", "this")));
             setupVerticleMessaging(runtime, vertx, address);
+          } else {
+            runtime.put("global", runtime.eval(Source.create("js", "this")));
           }
 
-          // wrap the deployment in a execute blocking as blocking io can happen during deploy
-          vertx
-            .<Void>executeBlocking(deploy -> {
-              try {
-                module.invokeMember("runMain", mainScript(fsVerticleName));
-                deploy.complete();
-              } catch (RuntimeException e) {
-                deploy.fail(e);
-              }
-            })
-            .onFailure(startFuture::fail)
-            .onSuccess(v ->
-              waitFor(runtime, "deploy").onComplete(startFuture));
+          try {
+            module.invokeMember("runMain", fsVerticleName);
+            waitFor(runtime, "deploy")
+              .onComplete(startFuture);
+          } catch (RuntimeException e) {
+            startFuture.fail(e);
+          }
         } catch (RuntimeException e) {
           startFuture.fail(e);
         }

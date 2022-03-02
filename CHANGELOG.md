@@ -5,6 +5,47 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.17.1] -
+* Bump graaljs to 22.0.0.2
+
+## [0.17.0] - 2022-01-20
+* Bump vert.x to 4.2.4
+* Bump graaljs to 22.0.0
+* bare specifiers are now resolved using es4x rules, not relative to working dir
+* verticle start run on event loop to avoid threading issues
+* Debug manual updated to reflect current state of debugging on vscode
+* Manual now includes section on hot-reload
+
+## [0.16.3] - 2022-01-05
+* Bump vert.x to 4.2.3
+* CI runs and passes on Windows, MacOS and Linux
+* Updated started docs
+* Fixed debugger properties
+
+## [0.16.2] - 2021-12-14
+* Bump vert.x to 4.2.2
+* Pretty print polyglot exceptions so IDEs can track back
+* Allow multiple maven repositories (comma separated)
+
+## [0.16.1] - 2021-11-10
+* Bump vert.x to 4.2.1
+* Fixed codegen for data objects to properly handle collection types
+* ES start module can now run from sub directories
+* Define `global` and `self` objects to better work with libraries like `Rx`
+* Start script file is adapted to a absolute or relative path to avoid ambiguity with bare modules.
+* Ensure that `config` is available on any script as `config` global.
+
+## [0.16.0] - 2021-10-28
+* Bump graaljs to 20.3.0
+* Bump vert.x to 4.2.0
+* Added new vert.x modules
+* Bumped dependencies (dependabot)
+* Removed nag about no compiler, as graal does it for us
+* PM can now run without NPM
+* ES fixes for generated code
+* Re-enabling manual generation
+* Added a CoC
+
 ## [0.15.0] - 2021-06-02
 * FileSystemResolver will use import maps when available
 * Started implementing support for import-map

@@ -160,7 +160,9 @@
       if (p) {
         // all paths need to be absolute
         if (p.indexOf('./') === 0) {
-          let cwd = System.getProperty("user.dir");
+          let cwd = System.getProperty("user.dir")
+            // transform \ into /
+            .replace(/\\/g, '/');
           if (cwd.length > 0) {
             if (cwd[cwd.length - 1] !== '/') {
               cwd += '/';
@@ -211,7 +213,8 @@
 
   function resolveAsNodeModule(id, root) {
     let base = root ? [root, 'node_modules'].join('/') : 'node_modules';
-    return resolveAsFile(id, base) ||
+    return resolveAsFile(id, base, '.js') ||
+      resolveAsFile(id, base, '.json') ||
       resolveAsDirectory(id, base) ||
       (root ? resolveAsNodeModule(id, io.getParent(root)) : false);
   }
@@ -240,6 +243,10 @@
       if (package_.main) {
         return (resolveAsFile(package_.main, base) ||
           resolveAsDirectory(package_.main, base));
+      }
+      // if there is type validate that we don't load this module
+      if (package_.type && package_.type !== 'commonjs') {
+        throw new ModuleError('Module "' + id + '" type not of type commonjs', 'MODULE_NOT_COMMONJS');
       }
       // if no package.main exists, look for index.js
       return resolveAsFile('index.js', base);

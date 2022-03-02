@@ -18,6 +18,7 @@ package io.reactiverse.es4x.codegen.generator;
 import io.vertx.codegen.*;
 import io.vertx.codegen.type.ClassKind;
 import io.vertx.codegen.type.ClassTypeInfo;
+import io.vertx.codegen.type.TypeInfo;
 import io.vertx.core.json.JsonObject;
 
 import java.io.PrintWriter;
@@ -25,6 +26,7 @@ import java.io.StringWriter;
 import java.util.*;
 
 import static io.reactiverse.es4x.codegen.generator.Util.*;
+import static io.reactiverse.es4x.codegen.generator.Util.getNPMScope;
 
 public class OptionsDTS extends Generator<DataObjectModel> {
 
@@ -113,18 +115,28 @@ public class OptionsDTS extends Generator<DataObjectModel> {
       }
     }
 
+    // address extends outside the module
+    if (model.getSuperType() != null) {
+      String selfScope = getNPMScope(model.getModule());
+      String superScope = getNPMScope(model.getSuperType().getModule());
+      if (!selfScope.equals(superScope)) {
+        TypeInfo referencedType = model.getSuperType();
+        importType(writer, session, referencedType, referencedType.getSimpleName(), getNPMScope(referencedType.getRaw().getModule()));
+        imports = true;
+      }
+    }
+
     if (imports) {
       writer.print("\n");
     }
 
     generateDoc(writer, model.getDoc(), "");
 
-    // TODO: handle extends/implements
-    writer.printf("export %sclass %s {\n\n", model.isConcrete() ? "" : "abstract ", model.getType().getRaw().getSimpleName());
-
-    if (includes.containsKey("d.ts")) {
-      writer.printf("%s\n", includes.getString("d.ts"));
-    }
+    writer.printf("export %sclass %s%s%s {\n\n",
+      model.isConcrete() ? "" : "abstract ",
+      model.getType().getRaw().getSimpleName(),
+      model.getSuperType() != null ? " extends " + model.getSuperType().getRaw().getSimpleName() : "",
+      includes.containsKey("dataObjectImplements<d.ts>") ? " implements " + includes.getString("dataObjectImplements<d.ts>") : "");
 
     if (model.hasEmptyConstructor()) {
       writer.print("  constructor();\n\n");
@@ -143,28 +155,32 @@ public class OptionsDTS extends Generator<DataObjectModel> {
       if (property.getGetterMethod() != null) {
         // write getter
         generateDoc(writer, property.getDoc(), "  ");
-        writer.printf("  %s(): %s;\n\n", property.getGetterMethod(), genType(property.getType()));
+        writer.printf("  %s%s(): %s;\n\n", getOverride(property), property.getGetterMethod(), genCollectionAwareType(property, false));
       }
 
       if (property.isSetter()) {
         // write setter
         generateDoc(writer, property.getDoc(), "  ");
-        writer.printf("  %s(%s: %s%s): %s;\n\n", property.getSetterMethod(), cleanReserved(property.getName()), genType(property.getType(), true), property.getType().isNullable() ? " | null | undefined" : "", model.getType().getRaw().getSimpleName());
+        writer.printf("  %s%s(%s: %s%s): %s;\n\n", getOverride(property), property.getSetterMethod(), cleanReserved(property.getName()), genCollectionAwareType(property, true), property.getType().isNullable() ? " | null | undefined" : "", model.getType().getRaw().getSimpleName());
       }
 
       if (property.isAdder()) {
         // write adder
         generateDoc(writer, property.getDoc(), "  ");
         if (property.getKind() == PropertyKind.MAP) {
-          writer.printf("  %s(key: string, %s: %s%s): %s;\n\n", property.getAdderMethod(), cleanReserved(property.getName()), genType(property.getType(), true), property.getType().isNullable() ? " | null | undefined" : "", model.getType().getRaw().getSimpleName());
+          writer.printf("  %s%s(key: string, %s: %s%s): %s;\n\n", getOverride(property), property.getAdderMethod(), cleanReserved(property.getName()), genType(property.getType(), true), property.getType().isNullable() ? " | null | undefined" : "", model.getType().getRaw().getSimpleName());
         } else {
-          writer.printf("  %s(%s: %s%s): %s;\n\n", property.getAdderMethod(), cleanReserved(property.getName()), genType(property.getType(), true), property.getType().isNullable() ? " | null | undefined" : "", model.getType().getRaw().getSimpleName());
+          writer.printf("  %s%s(%s: %s%s): %s;\n\n", getOverride(property), property.getAdderMethod(), cleanReserved(property.getName()), genType(property.getType(), true), property.getType().isNullable() ? " | null | undefined" : "", model.getType().getRaw().getSimpleName());
         }
       }
     }
 
     if (model.hasToJsonMethod()) {
       writer.print("\n  toJson(): { [key: string]: any };\n");
+    }
+
+    if (includes.containsKey("d.ts")) {
+      writer.printf("%s\n", includes.getString("d.ts"));
     }
 
     writer.print("}\n");
@@ -175,5 +191,24 @@ public class OptionsDTS extends Generator<DataObjectModel> {
     }
 
     return sw.toString();
+  }
+
+  private String getOverride(PropertyInfo property) {
+    if (property.getAnnotation("java.lang.Override") != null) {
+      return "/* override */ ";
+    }
+    return "";
+  }
+
+  private static String genCollectionAwareType(PropertyInfo propertyInfo, boolean parameter) {
+    if (propertyInfo.isList() || propertyInfo.isSet()) {
+      return genType(propertyInfo.getType(), parameter) + "[]";
+    }
+
+    if (propertyInfo.isMap()) {
+      return "{ [key: string]: " + genType(propertyInfo.getType(), parameter) + " }";
+    }
+
+    return genType(propertyInfo.getType(), parameter);
   }
 }
